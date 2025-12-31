@@ -4,7 +4,7 @@ import Database from 'better-sqlite3';
 
 let testDb: Database.Database;
 
-before(async () => {
+before(() => {
   testDb = new Database(':memory:');
 
   testDb.exec(`
@@ -45,7 +45,9 @@ function createMessage(newMessage: { name: string; message: string }) {
   `);
   const result = stmt.run(newMessage.name, newMessage.message);
 
-  const selectStmt = testDb.prepare('SELECT id, name, message, created_at FROM messages WHERE id = ?');
+  const selectStmt = testDb.prepare(
+    'SELECT id, name, message, created_at FROM messages WHERE id = ?'
+  );
   return selectStmt.get(result.lastInsertRowid);
 }
 
@@ -66,9 +68,9 @@ test('createMessage should insert a new message and return it', () => {
 });
 
 test('getMessages should return messages in descending order', () => {
-  const msg1 = createMessage({ name: 'ユーザー1', message: 'メッセージ1' });
-  const msg2 = createMessage({ name: 'ユーザー2', message: 'メッセージ2' });
-  const msg3 = createMessage({ name: 'ユーザー3', message: 'メッセージ3' });
+  createMessage({ name: 'ユーザー1', message: 'メッセージ1' });
+  createMessage({ name: 'ユーザー2', message: 'メッセージ2' });
+  createMessage({ name: 'ユーザー3', message: 'メッセージ3' });
 
   const messages = getMessages(3, 0);
 

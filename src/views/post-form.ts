@@ -26,12 +26,16 @@ export function postForm(formData: FormData = {}, errors: FormErrors = {}) {
             maxlength="50"
             required
             class="${errors.name ? 'error' : ''}"
-          >
-          ${errors.name ? html`<span class="error-message">${errors.name}</span>` : ''}
+          />
+          ${errors.name
+            ? html`<span class="error-message">${errors.name}</span>`
+            : ''}
         </div>
 
         <div class="form-group">
-          <label for="message">メッセージ <span class="required">*</span></label>
+          <label for="message"
+            >メッセージ <span class="required">*</span></label
+          >
           <textarea
             id="message"
             name="message"
@@ -39,8 +43,12 @@ export function postForm(formData: FormData = {}, errors: FormErrors = {}) {
             maxlength="1000"
             required
             class="${errors.message ? 'error' : ''}"
-          >${formData.message || ''}</textarea>
-          ${errors.message ? html`<span class="error-message">${errors.message}</span>` : ''}
+          >
+${formData.message || ''}</textarea
+          >
+          ${errors.message
+            ? html`<span class="error-message">${errors.message}</span>`
+            : ''}
         </div>
 
         <div class="form-actions">

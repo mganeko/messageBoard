@@ -18,7 +18,9 @@ export function createMessage(newMessage: NewMessage): Message {
   `);
   const result = stmt.run(newMessage.name, newMessage.message);
 
-  const selectStmt = db.prepare('SELECT id, name, message, created_at FROM messages WHERE id = ?');
+  const selectStmt = db.prepare(
+    'SELECT id, name, message, created_at FROM messages WHERE id = ?'
+  );
   return selectStmt.get(result.lastInsertRowid) as Message;
 }
 
