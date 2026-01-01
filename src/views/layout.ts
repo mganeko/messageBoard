@@ -1,6 +1,9 @@
 import { html } from 'hono/html';
 
-export function layout(title: string, content: string) {
+export function layout(
+  title: string,
+  content: ReturnType<typeof html> | string
+) {
   return html`<!DOCTYPE html>
     <html lang="ja">
       <head>

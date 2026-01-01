@@ -2,6 +2,13 @@ import { test, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert';
 import Database from 'better-sqlite3';
 
+interface Message {
+  id: number;
+  name: string;
+  message: string;
+  created_at: string;
+}
+
 let testDb: Database.Database;
 
 before(() => {
@@ -28,17 +35,17 @@ after(() => {
   testDb.close();
 });
 
-function getMessages(limit: number, offset: number) {
+function getMessages(limit: number, offset: number): Message[] {
   const stmt = testDb.prepare(`
     SELECT id, name, message, created_at
     FROM messages
     ORDER BY created_at DESC, id DESC
     LIMIT ? OFFSET ?
   `);
-  return stmt.all(limit, offset);
+  return stmt.all(limit, offset) as Message[];
 }
 
-function createMessage(newMessage: { name: string; message: string }) {
+function createMessage(newMessage: { name: string; message: string }): Message {
   const stmt = testDb.prepare(`
     INSERT INTO messages (name, message)
     VALUES (?, ?)
@@ -48,7 +55,7 @@ function createMessage(newMessage: { name: string; message: string }) {
   const selectStmt = testDb.prepare(
     'SELECT id, name, message, created_at FROM messages WHERE id = ?'
   );
-  return selectStmt.get(result.lastInsertRowid);
+  return selectStmt.get(result.lastInsertRowid) as Message;
 }
 
 function getMessageCount(): number {
