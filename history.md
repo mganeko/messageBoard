@@ -565,3 +565,43 @@ CLOUDFLARE_DEPLOYMENT.mdに `--remote` フラグの情報を追加しました�
 
 ---
 
+# User
+
+test/messages.test.ts を修正したい。
+
+# AI
+
+test/db/messages.test.ts を修正しました。
+
+**実施内容:**
+
+1. **src/db/messages.ts の実際のメソッドを使用**
+   - `getMessages`, `createMessage`, `getMessageCount` をインポート
+   - 実際の本番コードをテスト
+
+2. **D1Database 互換レイヤーを作成**
+   - `D1DatabaseWrapper`: better-sqlite3 を D1Database インターフェースでラップ
+   - `D1PreparedStatementWrapper`: D1 の prepare/bind/all/first/run メソッドを実装
+   - ローカルSQLiteでD1の動作を再現
+
+3. **ローカル SQLite を使用**
+   - better-sqlite3 でインメモリデータベース (`:memory:`) を作成
+   - 各テスト前にデータをクリーンアップ
+
+4. **非同期テストに対応**
+   - 全てのテスト関数を `async` に変更
+   - `await` を使ってメソッドを呼び出し
+
+5. **不要なインポートを削除**
+   - 未使用の `Message` 型をインポートから削除
+
+**テスト結果:**
+✓ createMessage should insert a new message and return it
+✓ getMessages should return messages in descending order
+✓ getMessages should support pagination
+✓ getMessageCount should return correct count
+
+全4テストが成功しました。実際の本番コードと同じロジックをローカル環境でテストできるようになりました。
+
+---
+
