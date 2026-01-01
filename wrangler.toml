@@ -1,0 +1,8 @@
+name = "message-board"
+main = "src/index.ts"
+compatibility_date = "2025-12-31"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "message-board-db"
+database_id = "" # wrangler d1 create コマンド実行後に設定
