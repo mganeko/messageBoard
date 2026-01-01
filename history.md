@@ -340,5 +340,83 @@ ADR-0006「Cloudflare Workers + D1への移行」を作成しました。
 
 これで、Cloudflareへの移行判断が正式に文書化されました。
 
+---
+
+# User
+
+wlangler devで実行時に、ローカルネットワーク内の他のPCから接続できるようにしたい
+
+# AI
+
+package.jsonのdevスクリプトを更新しました。
+
+**変更内容:**
+- `"dev": "wrangler dev"` → `"dev": "wrangler dev --ip 0.0.0.0"`
+
+**使い方:**
+```bash
+npm run dev
+```
+
+**アクセス方法:**
+- ローカル: `http://localhost:8787`
+- 同じネットワーク内の他のPC: `http://<このPCのIPアドレス>:8787`
+
+動作確認を行い、IPアドレス `192.168.64.4` で正常に起動することを確認しました。
+
+---
+
+# User
+
+プロジェクトのルートのclaude.mdを現状に合わせて修正して
+
+# AI
+
+claude.mdをCloudflare Workers + D1の現状に合わせて更新しました。
+
+**主な変更点:**
+
+1. **技術スタック**: Node.js + SQLite → Cloudflare Workers + D1
+2. **開発コマンド**: D1関連コマンドとデプロイコマンドを追加
+3. **ディレクトリ構造**: migrations/, scripts/, src/types/bindings.ts を追加
+4. **関心の分離**: データアクセス層がすべて非同期であることを明記
+5. **データベース設計**: D1 API の特徴セクションを追加
+6. **重要な注意点**:
+   - データベース操作は必ず非同期（async/await）で実装
+   - D1 APIの戻り値の型に注意
+7. **Cloudflare Workers固有の制約**セクションを新規追加
+8. **参考ドキュメント**セクションを新規追加
+
+これで、Claude Codeが今後このプロジェクトで作業する際に、Cloudflare Workers環境を正しく理解して開発できるようになります。
+
+---
+
+# User
+
+プロジェクトのルートのREADME.mdを現状に合わせて修正して
+
+# AI
+
+README.mdをCloudflare Workers + D1の現状に合わせて大幅に更新しました。
+
+**主な変更点:**
+
+1. **特徴**: エッジコンピューティングと自動スケーリングを追加
+2. **技術スタック**: Cloudflare Workers、D1、Wranglerに更新
+3. **セットアップ**: Cloudflareアカウントとログイン手順を追加
+4. **使い方**:
+   - 開発サーバー: `http://localhost:8787`、ローカルネットワークアクセスの説明
+   - デプロイ手順: 初回と更新デプロイを詳細に記載
+   - Linter/Formatterコマンド追加
+5. **プロジェクト構造**: migrations/, scripts/, wrangler.toml等を追加
+6. **データベース**: Cloudflare D1の説明、マイグレーション、ローカル開発
+7. **ADR**: ADR-0006を追加、ADR-0001を「置き換えられた」と明記
+8. **セキュリティ**: DDoS対策、エッジセキュリティを追加
+9. **開発ガイドライン**: Cloudflare Workers固有の注意点セクションを追加
+10. **今後の拡張案**: Cloudflareエコシステムに合わせて更新
+11. **参考リンク**: 新規セクション追加
+
+これで、README.mdが現在のCloudflare Workers + D1環境を正確に反映するようになりました。
+
 
 
