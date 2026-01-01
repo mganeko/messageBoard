@@ -1,31 +1,44 @@
-import { db } from './connection.js';
 import type { Message, NewMessage } from '../types/message.js';
 
-export function getMessages(limit: number, offset: number): Message[] {
+export async function getMessages(
+  db: D1Database,
+  limit: number,
+  offset: number
+): Promise<Message[]> {
   const stmt = db.prepare(`
     SELECT id, name, message, created_at
     FROM messages
     ORDER BY created_at DESC, id DESC
     LIMIT ? OFFSET ?
   `);
-  return stmt.all(limit, offset) as Message[];
+  const result = await stmt.bind(limit, offset).all<Message>();
+  return result.results;
 }
 
-export function createMessage(newMessage: NewMessage): Message {
+export async function createMessage(
+  db: D1Database,
+  newMessage: NewMessage
+): Promise<Message> {
   const stmt = db.prepare(`
     INSERT INTO messages (name, message)
     VALUES (?, ?)
   `);
-  const result = stmt.run(newMessage.name, newMessage.message);
+  const result = await stmt.bind(newMessage.name, newMessage.message).run();
 
   const selectStmt = db.prepare(
     'SELECT id, name, message, created_at FROM messages WHERE id = ?'
   );
-  return selectStmt.get(result.lastInsertRowid) as Message;
+  const createdMessage = await selectStmt
+    .bind(result.meta.last_row_id)
+    .first<Message>();
+  if (!createdMessage) {
+    throw new Error('Failed to retrieve created message');
+  }
+  return createdMessage;
 }
 
-export function getMessageCount(): number {
+export async function getMessageCount(db: D1Database): Promise<number> {
   const stmt = db.prepare('SELECT COUNT(*) as count FROM messages');
-  const result = stmt.get() as { count: number };
-  return result.count;
+  const result = await stmt.first();
+  return (result as { count: number }).count;
 }
