@@ -50,19 +50,27 @@ database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"  # ここに実際のIDを�
 
 ### 4. マイグレーションの適用
 
+**重要:** デフォルトではローカルDBに適用されます。リモート（本番）DBに適用するには `--remote` フラグが必要です。
+
 ```bash
-npm run db:migrate
+# 本番環境のリモートDBに適用
+npm run db:migrate -- --remote
 ```
 
-これでD1データベースにテーブルが作成されます。
+これでCloudflare上のD1データベースにテーブルが作成されます。
+
+> **📝 Note:** `--remote` フラグを付けないと、ローカルの `.wrangler/state/v3/d1` 内のDBにのみ適用されます。
 
 ### 5. 既存データのインポート
 
 ```bash
-npm run db:execute -- --file=migration-data.sql
+# 本番環境のリモートDBにインポート
+npm run db:execute -- --remote --file=migration-data.sql
 ```
 
 既存の4件のメッセージが本番D1データベースにインポートされます。
+
+> **📝 Note:** こちらも `--remote` フラグが必要です。
 
 ### 6. 本番環境へデプロイ
 
@@ -89,6 +97,11 @@ npm run dev
 ```
 
 http://localhost:8787 でアクセスできます。ローカルのD1データベースは自動的にシミュレートされます。
+
+> **💡 ローカルとリモートの違い**
+> - `npm run db:migrate` → ローカルDBに適用（デフォルト）
+> - `npm run db:migrate -- --remote` → Cloudflare上のリモートDBに適用
+> - データは `.wrangler/state/v3/d1` に保存されます（ローカル環境）
 
 ### ローカルD1にマイグレーションを適用（初回のみ）
 
