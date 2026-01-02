@@ -4,8 +4,9 @@
 
 ## ADR一覧
 
-1. [ADR-0001: 技術スタックの選定](./0001-technology-stack-selection.md)
+1. [ADR-0001: 技術スタックの選定](./0001-technology-stack-selection.md) **[置き換えられた]**
    - Hono.js + SQLite + TypeScriptの採用理由
+   - ADR-0006でCloudflare Workers + D1に移行
 
 2. [ADR-0002: アーキテクチャパターンの選択](./0002-architecture-pattern.md)
    - Multi Page Application、関心の分離の決定
@@ -18,6 +19,10 @@
 
 5. [ADR-0005: UIスタイリングアプローチ](./0005-ui-styling-approach.md)
    - CSSフレームワークを使わない決定
+
+6. [ADR-0006: Cloudflare Workers + D1への移行](./0006-cloudflare-workers-migration.md)
+   - Node.js + SQLiteからCloudflare Workers + D1への移行理由
+   - エッジコンピューティングとサーバーレスアーキテクチャの採用
 
 ## ADRとは
 

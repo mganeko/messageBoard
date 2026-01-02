@@ -2,7 +2,7 @@
 
 ## ステータス
 
-採用
+置き換えられた（ADR-0006でCloudflare Workers + D1に移行）
 
 ## 背景
 

@@ -2,8 +2,9 @@ import { Hono } from 'hono';
 import { createMessage } from '../db/messages.js';
 import { layout } from '../views/layout.js';
 import { postForm } from '../views/post-form.js';
+import type { Env } from '../types/bindings.js';
 
-const app = new Hono();
+const app = new Hono<{ Bindings: Env }>();
 
 app.get('/post', (c) => {
   const content = postForm();
@@ -34,7 +35,8 @@ app.post('/post', async (c) => {
     return c.html(layout('新規投稿', content));
   }
 
-  createMessage({ name, message });
+  const db = c.env.DB;
+  await createMessage(db, { name, message });
   return c.redirect('/');
 });
 

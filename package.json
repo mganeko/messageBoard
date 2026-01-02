@@ -4,9 +4,13 @@
   "description": "Simple message board web application",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "wrangler dev --ip 0.0.0.0",
+    "deploy": "wrangler deploy",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "db:create": "wrangler d1 create message-board-db",
+    "db:migrate": "wrangler d1 migrations apply message-board-db",
+    "db:execute": "wrangler d1 execute message-board-db",
+    "export-data": "tsx scripts/export-data.ts",
     "test": "node --import tsx --test test/**/*.test.ts",
     "lint": "eslint . && prettier --check .",
     "lint:fix": "eslint --fix . && prettier --write .",
@@ -20,21 +24,22 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@hono/node-server": "^1.13.7",
-    "better-sqlite3": "^11.8.1",
     "hono": "^4.6.14"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
     "@eslint/js": "^9.39.2",
     "@types/better-sqlite3": "^7.6.12",
     "@types/eslint__js": "^8.42.3",
     "@types/node": "^22.10.5",
+    "better-sqlite3": "^11.8.1",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.7.4",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.51.0"
+    "typescript-eslint": "^8.51.0",
+    "wrangler": "^4.54.0"
   }
 }

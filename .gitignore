@@ -63,6 +63,11 @@ tmp/
 *.sqlite3
 message-board.db
 
+# Wrangler / Cloudflare Workers
+.wrangler/
+.dev.vars
+wrangler.toml
+
 # Package manager locks (optional - uncomment if needed)
 # package-lock.json
 # yarn.lock

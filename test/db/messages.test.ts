@@ -1,15 +1,61 @@
 import { test, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert';
 import Database from 'better-sqlite3';
+import {
+  getMessages,
+  createMessage,
+  getMessageCount,
+} from '../../src/db/messages.js';
 
-interface Message {
-  id: number;
-  name: string;
-  message: string;
-  created_at: string;
+// D1Database の互換レイヤーを作成
+class D1DatabaseWrapper {
+  private db: Database.Database;
+
+  constructor(db: Database.Database) {
+    this.db = db;
+  }
+
+  prepare(query: string) {
+    const stmt = this.db.prepare(query);
+    return new D1PreparedStatementWrapper(stmt);
+  }
+}
+
+class D1PreparedStatementWrapper {
+  private stmt: Database.Statement;
+  private boundValues: unknown[] = [];
+
+  constructor(stmt: Database.Statement) {
+    this.stmt = stmt;
+  }
+
+  bind(...values: unknown[]) {
+    this.boundValues = values;
+    return this;
+  }
+
+  all<T>() {
+    const results = this.stmt.all(...this.boundValues) as T[];
+    return Promise.resolve({ results });
+  }
+
+  first<T>() {
+    const result = this.stmt.get(...this.boundValues) as T | undefined;
+    return Promise.resolve(result ?? null);
+  }
+
+  run() {
+    const info = this.stmt.run(...this.boundValues);
+    return Promise.resolve({
+      meta: {
+        last_row_id: info.lastInsertRowid as number,
+      },
+    });
+  }
 }
 
 let testDb: Database.Database;
+let db: D1Database;
 
 before(() => {
   testDb = new Database(':memory:');
@@ -25,6 +71,8 @@ before(() => {
     CREATE INDEX IF NOT EXISTS idx_messages_created_at
     ON messages(created_at DESC);
   `);
+
+  db = new D1DatabaseWrapper(testDb) as unknown as D1Database;
 });
 
 beforeEach(() => {
@@ -35,38 +83,9 @@ after(() => {
   testDb.close();
 });
 
-function getMessages(limit: number, offset: number): Message[] {
-  const stmt = testDb.prepare(`
-    SELECT id, name, message, created_at
-    FROM messages
-    ORDER BY created_at DESC, id DESC
-    LIMIT ? OFFSET ?
-  `);
-  return stmt.all(limit, offset) as Message[];
-}
-
-function createMessage(newMessage: { name: string; message: string }): Message {
-  const stmt = testDb.prepare(`
-    INSERT INTO messages (name, message)
-    VALUES (?, ?)
-  `);
-  const result = stmt.run(newMessage.name, newMessage.message);
-
-  const selectStmt = testDb.prepare(
-    'SELECT id, name, message, created_at FROM messages WHERE id = ?'
-  );
-  return selectStmt.get(result.lastInsertRowid) as Message;
-}
-
-function getMessageCount(): number {
-  const stmt = testDb.prepare('SELECT COUNT(*) as count FROM messages');
-  const result = stmt.get() as { count: number };
-  return result.count;
-}
-
-test('createMessage should insert a new message and return it', () => {
+test('createMessage should insert a new message and return it', async () => {
   const newMessage = { name: 'テストユーザー', message: 'テストメッセージ' };
-  const result = createMessage(newMessage);
+  const result = await createMessage(db, newMessage);
 
   assert.strictEqual(typeof result.id, 'number');
   assert.strictEqual(result.name, newMessage.name);
@@ -74,12 +93,12 @@ test('createMessage should insert a new message and return it', () => {
   assert.strictEqual(typeof result.created_at, 'string');
 });
 
-test('getMessages should return messages in descending order', () => {
-  createMessage({ name: 'ユーザー1', message: 'メッセージ1' });
-  createMessage({ name: 'ユーザー2', message: 'メッセージ2' });
-  createMessage({ name: 'ユーザー3', message: 'メッセージ3' });
+test('getMessages should return messages in descending order', async () => {
+  await createMessage(db, { name: 'ユーザー1', message: 'メッセージ1' });
+  await createMessage(db, { name: 'ユーザー2', message: 'メッセージ2' });
+  await createMessage(db, { name: 'ユーザー3', message: 'メッセージ3' });
 
-  const messages = getMessages(3, 0);
+  const messages = await getMessages(db, 3, 0);
 
   assert.strictEqual(messages.length, 3);
   assert.strictEqual(messages[0].message, 'メッセージ3');
@@ -87,25 +106,25 @@ test('getMessages should return messages in descending order', () => {
   assert.strictEqual(messages[2].message, 'メッセージ1');
 });
 
-test('getMessages should support pagination', () => {
-  createMessage({ name: 'ユーザー1', message: 'メッセージ1' });
-  createMessage({ name: 'ユーザー2', message: 'メッセージ2' });
-  createMessage({ name: 'ユーザー3', message: 'メッセージ3' });
-  createMessage({ name: 'ユーザー4', message: 'メッセージ4' });
+test('getMessages should support pagination', async () => {
+  await createMessage(db, { name: 'ユーザー1', message: 'メッセージ1' });
+  await createMessage(db, { name: 'ユーザー2', message: 'メッセージ2' });
+  await createMessage(db, { name: 'ユーザー3', message: 'メッセージ3' });
+  await createMessage(db, { name: 'ユーザー4', message: 'メッセージ4' });
 
-  const messages = getMessages(2, 0);
+  const messages = await getMessages(db, 2, 0);
   assert.strictEqual(messages.length, 2);
 
-  const nextMessages = getMessages(2, 2);
+  const nextMessages = await getMessages(db, 2, 2);
   assert.strictEqual(nextMessages.length, 2);
   assert.notStrictEqual(messages[0].id, nextMessages[0].id);
 });
 
-test('getMessageCount should return correct count', () => {
-  createMessage({ name: 'ユーザー1', message: 'メッセージ1' });
-  createMessage({ name: 'ユーザー2', message: 'メッセージ2' });
-  createMessage({ name: 'ユーザー3', message: 'メッセージ3' });
+test('getMessageCount should return correct count', async () => {
+  await createMessage(db, { name: 'ユーザー1', message: 'メッセージ1' });
+  await createMessage(db, { name: 'ユーザー2', message: 'メッセージ2' });
+  await createMessage(db, { name: 'ユーザー3', message: 'メッセージ3' });
 
-  const count = getMessageCount();
+  const count = await getMessageCount(db);
   assert.strictEqual(count, 3);
 });
